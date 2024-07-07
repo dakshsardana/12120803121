@@ -1,34 +1,36 @@
 const express = require("express");
 const axios = require("axios");
 const app = express();
-const port = 3000;
-
-const clientID = "18f797c5-4713-4c3b-9600-c96022a9164d";
-const clientSecret = "YlWiIIpMZbtnhZAI";
-const testServerBaseURL = "http://20.244.56.144/test";
-const minPrice = 0;
 const cors = require("cors");
+const port = 5000;
+
+const myID = "18f797c5-4713-4c3b-9600-c96022a9164d";
+const mySecret = "YlWiIIpMZbtnhZAI";
+const myURL = "http://20.244.56.144/test";
+
 app.use(cors());
-let accessToken = "";
-const authenticate = async () => {
+
+let accToken = "";
+
+const auth = async () => {
   try {
-    const response = await axios.post(`${testServerBaseURL}/auth`, {
+    const response = await axios.post(`${myURL}/auth`, {
       companyName: "Daksh Sardana",
-      clientID: clientID,
-      clientSecret: clientSecret,
+      clientID: myID,
+      clientSecret: mySecret,
       ownerName: "Daksh",
       ownerEmail: "daksh2003sardana@gmail.com",
       rollNo: "12120803121",
     });
-    accessToken = response.data.access_token;
+    accToken = response.data.access_token;
   } catch (error) {
-    console.error("Error authenticating:", error);
+    console.error("Error in authentication:", error);
   }
 };
 
 app.use(async (req, res, next) => {
-  if (!accessToken) {
-    await authenticate();
+  if (!accToken) {
+    await auth();
   }
   next();
 });
@@ -37,12 +39,13 @@ app.get("/categories/:categoryName/products", async (req, res) => {
   const { categoryName } = req.params;
   const {
     n = 10,
-    minPrice = 1,
-    maxPrice = 10000,
+    minP = 1,
+    maxP = 10000,
     sort = "",
     order = "asc",
     page = 1,
   } = req.query;
+
   const companyNames = ["AMZ", "FLP", "SNP", "MYN", "AZO"];
 
   try {
@@ -50,10 +53,10 @@ app.get("/categories/:categoryName/products", async (req, res) => {
 
     for (const company of companyNames) {
       const response = await axios.get(
-        `${testServerBaseURL}/companies/${company}/categories/${categoryName}/products`,
+        `${myURL}/companies/${company}/categories/${categoryName}/products`,
         {
-          params: { top: n, minPrice: minPrice, maxPrice },
-          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { top: n, minP: minP, maxP: maxP},
+          headers: { Authorization: `Bearer ${accToken}` },
         }
       );
       allProducts = allProducts.concat(response.data);
@@ -67,11 +70,11 @@ app.get("/categories/:categoryName/products", async (req, res) => {
     }
 
     const start = (page - 1) * n;
-    const paginatedProducts = allProducts.slice(start, start + n);
+    const pagProd = allProducts.slice(start, start + n);
 
-    res.json(paginatedProducts);
+    res.json(pagProd);
   } catch (error) {
-    console.error("Error fetching products:", error.response.data);
+    console.error("Error fetching:", error.response.data);
     res
       .status(500)
       .json({ errors: error.response.data.errors || "Internal server error" });

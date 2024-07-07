@@ -49,7 +49,7 @@ h1 {
 }
 
 .category-selector select:hover {
-  border-color: #007bff;
+  border-color: #df0e0e;
 }
 
 /* Sort Container */
@@ -72,7 +72,7 @@ h1 {
 }
 
 .sort-button:hover {
-  background-color: #0056b3;
+  background-color: #9d4932;
   transform: translateY(-2px);
 }
 
@@ -116,4 +116,3 @@ table th, table td {
   text-align: left;
   border-bottom: 1px solid #f0f0f0;
 }
-

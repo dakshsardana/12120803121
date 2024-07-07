@@ -4,69 +4,88 @@ import axios from "axios";
 import "./style.css";
 
 const App = () => {
-  const [products, setProducts] = useState([]);
+  const [product, setProduct] = useState([]);
   const [sortKey, setSortKey] = useState("");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [showSortOptions, setShowSortOptions] = useState(false);
+  const [order, setOrder] = useState("asc");
+  const [sortOptions, setSortOptions] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [productsPerPage] = useState(10);
-  const [category, setCategory] = useState("Laptop"); // Default category
+  const [productsInPage] = useState(10);
+  const [category, setCategory] = useState("TV"); // Default category
 
-  const fetchProducts = async () => {
+  const getProducts = async () => {
     try {
       const response = await axios.get(
         `http://localhost:3000/categories/${category}/products`,
         {
           params: {
-            n: productsPerPage * currentPage,
+            n: productsInPage * currentPage,
             sort: sortKey,
-            order: sortOrder,
-            minPrice: 1,
-            maxPrice: 10000,
+            order: order,
+            minP: 1,
+            maxP: 10000,
           },
         }
       );
-      setProducts(response.data);
-      // console.log(products);
+    setProduct([response.data]);
+      console.log(product);
     } catch (error) {
-      console.error("Error fetching products:", error.message);
+      console.error("Error fetching :", error.message);
     }
   };
 
-  const handleSort = (key) => {
+  const sortProd = (key) => {
     if (sortKey === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setOrder(order === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
-      setSortOrder("asc");
+      setOrder("asc");
     }
-    setShowSortOptions(false);
-    fetchProducts();
+    setSortOptions(false);
+    getProducts();
   };
 
   const sortIcon = (key) => {
     if (sortKey === key) {
-      return sortOrder === "asc" ? "▲" : "▼";
+      return order === "asc" ? "▲" : "▼";
     }
     return "";
   };
 
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(
-    indexOfFirstProduct,
-    indexOfLastProduct
+  const indexLast = currentPage * productsInPage;
+
+  const indexFirst = indexLast - productsInPage;
+
+  const currentProducts = product.slice(
+    indexFirst,
+    indexLast
   );
+  const categoryOptions = [
+    "Phone",
+    "Computer",
+    "TV",
+    "Earphone",
+    "Tablet",
+    "Charger",
+    "Mouse",
+    "Keypad",
+    "Bluetooth",
+    "Pendrive",
+    "Remote",
+    "Speaker",
+    "Headset",
+    "Laptop",
+    "PC",
+  ];
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   useEffect(() => {
-    fetchProducts();
-  }, [category, currentPage, sortKey, sortOrder]);
+    getProducts();
+  }, [category, currentPage, sortKey, order]);
 
-  const renderPagination = () => {
+  const doPagination = () => {
     const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(products.length / productsPerPage); i++) {
+    for (let i = 1; i <= Math.ceil(product.length / productsInPage); i++) {
       pageNumbers.push(i);
     }
     return (
@@ -89,7 +108,7 @@ const App = () => {
             </button>
           </li>
         ))}
-        {currentPage < Math.ceil(products.length / productsPerPage) && (
+        {currentPage < Math.ceil(product.length / productsInPage) && (
           <li className="page-item">
             <button
               onClick={() => paginate(currentPage + 1)}
@@ -102,23 +121,7 @@ const App = () => {
     );
   };
 
-  const categoryOptions = [
-    "Phone",
-    "Computer",
-    "TV",
-    "Earphone",
-    "Tablet",
-    "Charger",
-    "Mouse",
-    "Keypad",
-    "Bluetooth",
-    "Pendrive",
-    "Remote",
-    "Speaker",
-    "Headset",
-    "Laptop",
-    "PC",
-  ];
+
 
   return (
     <>
@@ -136,18 +139,18 @@ const App = () => {
       <div className="sort-container">
         <button
           className="sort-button"
-          onClick={() => setShowSortOptions(!showSortOptions)}>
+          onClick={() => setSortOptions(!sortOptions)}>
           Sort By
         </button>
-        {showSortOptions && (
+        {sortOptions && (
           <div className="sort-options">
-            <button onClick={() => handleSort("price")}>
+            <button onClick={() => sortProd("price")}>
               Price {sortIcon("price")}
             </button>
-            <button onClick={() => handleSort("rating")}>
+            <button onClick={() => sortProd("rating")}>
               Rating {sortIcon("rating")}
             </button>
-            <button onClick={() => handleSort("discount")}>
+            <button onClick={() => sortProd("discount")}>
               Discount {sortIcon("discount")}
             </button>
           </div>
@@ -156,7 +159,7 @@ const App = () => {
       <table>
         <thead>
           <tr>
-            <th>Product Name</th>
+            <th>Name</th>
             <th>Price</th>
             <th>Rating</th>
             <th>Discount</th>
@@ -166,11 +169,11 @@ const App = () => {
           <UserData
             products={currentProducts}
             sortKey={sortKey}
-            sortOrder={sortOrder}
+            order={order}
           />
         </tbody>
       </table>
-      {/* {renderPagination()} */}
+     {doPagination()}
     </>
   );
 };
